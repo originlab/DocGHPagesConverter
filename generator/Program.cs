@@ -36,6 +36,7 @@ class Program
         {
             var srcDir = Path.Combine(targetBookPath, lang);
             var dstDir = Directory.CreateDirectory(Path.Combine(outputPath, lang));
+            var transformer = new FileTransformer();
 
             foreach (var page in pages)
             {
@@ -51,15 +52,10 @@ class Program
                 var srcFilePath = Path.Combine(srcDir, page.Attribute("file")!.Value);
                 var dstFilePath = Path.Combine(dir, "index.html");
 
-                ProcessFile(srcFilePath, dstFilePath);
+                transformer.Transform(srcFilePath, dstFilePath);
             }
         }
 
         return 0;
-    }
-
-    private static void ProcessFile(string srcFilePath, string dstFilePath)
-    {
-        File.Copy(srcFilePath, dstFilePath);
     }
 }
