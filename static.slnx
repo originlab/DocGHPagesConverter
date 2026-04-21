@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="generator/generator.csproj" />
+  <Project Path="templates/templates.csproj" />
+</Solution>
