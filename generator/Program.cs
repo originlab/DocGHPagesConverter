@@ -19,7 +19,7 @@ class Program
         var languages = (from subPath in Directory.EnumerateDirectories(targetBookPath)
                          let name = Path.GetFileName(subPath)
                          where name.Length == 2
-                         select name).ToArray();
+                         select name).ToList();
 
         if (!languages.Contains("en"))
             return -3;
@@ -30,13 +30,14 @@ class Program
             return -4;
 
         var bookXml = XElement.Load(bookXmlPath);
+        var pages = bookXml.Descendants("page").ToList();
 
         foreach (var lang in languages)
         {
             var srcDir = Path.Combine(targetBookPath, lang);
             var dstDir = Directory.CreateDirectory(Path.Combine(outputPath, lang));
 
-            foreach (var page in bookXml.Descendants("page"))
+            foreach (var page in pages)
             {
                 var dir = dstDir.FullName;
                 var url = page.Attribute("url")!.Value;
