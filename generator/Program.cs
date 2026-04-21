@@ -51,10 +51,15 @@ class Program
                 var srcFilePath = Path.Combine(srcDir, page.Attribute("file")!.Value);
                 var dstFilePath = Path.Combine(dir, "index.html");
 
-                File.Copy(srcFilePath, dstFilePath);
+                ProcessFile(srcFilePath, dstFilePath);
             }
         }
 
         return 0;
+    }
+
+    private static void ProcessFile(string srcFilePath, string dstFilePath)
+    {
+        File.Copy(srcFilePath, dstFilePath);
     }
 }
