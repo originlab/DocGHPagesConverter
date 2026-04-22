@@ -13,7 +13,7 @@ internal class BookTransformer
     readonly string OutputPath;
 
     readonly string BookUrlName;
-    readonly string BookChmName;
+    readonly string BookDirName;
     readonly (string url, string file)[] Pages;
 
     readonly Dictionary<string, (string book, string url)> PageLinks;
@@ -23,7 +23,7 @@ internal class BookTransformer
         var bookXml = XElement.Load(Path.Combine(sourcePath, "en", "book.xml"));
 
         BookUrlName = Path.GetFileName(sourcePath).ToLowerInvariant();
-        BookChmName = bookXml.Attribute("dir")!.Value;
+        BookDirName = bookXml.Attribute("dir")!.Value;
 
         Pages = (from p in bookXml.Descendants("page")
                  let url = p.Attribute("url")!.Value
@@ -99,9 +99,9 @@ internal class BookTransformer
                 {
                     if (Uri.IsWellFormedUriString(href, UriKind.Relative))
                     {
-                        if (href.StartsWith($"../../{BookChmName}/"))
+                        if (href.StartsWith($"../../{BookDirName}/"))
                         {
-                            if (PageLinks.TryGetValue(href[$"../../{BookChmName}/".Length..], out var link))
+                            if (PageLinks.TryGetValue(href[$"../../{BookDirName}/".Length..], out var link))
                             {
                                 a.SetAttribute("href", $"/{link.book}/{language}/{link.url}{hash}");
 
