@@ -8,9 +8,9 @@ internal class BookTransformer
     readonly string OutputPath;
     readonly (string url, string file)[] Pages;
 
-    public BookTransformer(string srcBookPath, string bookXmlPath, string outputPath)
+    public BookTransformer(string srcBookPath, string outputPath)
     {
-        var bookXml = XElement.Load(bookXmlPath);
+        var bookXml = XElement.Load(Path.Combine(srcBookPath, "en", "book.xml"));
         Pages = (from p in bookXml.Descendants("page")
                  select (p.Attribute("url")!.Value, p.Attribute("file")!.Value)).ToArray();
 

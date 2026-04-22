@@ -3,7 +3,7 @@ namespace OriginLab.DocumentGeneration;
 
 class Program
 {
-    static int Main(string[] args)
+    static void Main(string[] args)
     {
         var outputPath = args[0];
 
@@ -13,7 +13,7 @@ class Program
         }
 
         if (Path.GetDirectoryName(outputPath) is not string srcBookPath)
-            return -2;
+            throw new ArgumentException("Expect output path within source book", nameof(args));
 
         var languages = (from subPath in Directory.EnumerateDirectories(srcBookPath)
                          let name = Path.GetFileName(subPath)
@@ -21,20 +21,13 @@ class Program
                          select name).ToList();
 
         if (!languages.Contains("en"))
-            return -3;
+            throw new FileNotFoundException("Expect en folder exists within source book", Path.Combine(srcBookPath, "en"));
 
-        var bookXmlPath = Path.Combine(srcBookPath, "en", "book.xml");
-
-        if (!File.Exists(bookXmlPath))
-            return -4;
-
-        var transformer = new BookTransformer(srcBookPath, bookXmlPath, outputPath);
+        var transformer = new BookTransformer(srcBookPath, outputPath);
 
         foreach (var lang in languages)
         {
             transformer.Transform(lang);
         }
-
-        return 0;
     }
 }
