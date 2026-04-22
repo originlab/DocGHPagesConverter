@@ -4,6 +4,8 @@ using AngleSharp.Dom;
 using AngleSharp.Html;
 using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
+using OriginLab.DocumentGeneration.Templates;
+using Razor.Templating.Core;
 
 namespace OriginLab.DocumentGeneration;
 
@@ -36,14 +38,14 @@ internal class BookTransformer
         OutputFolder = Path.GetFullPath(outputFolder);
     }
 
-    public void Transform(string language)
+    public async Task TransformAsync(string language)
     {
         var srcDir = Path.Combine(SourceFolder, language, BookDirName);
-        var outDir = Directory.CreateDirectory(Path.Combine(OutputFolder, language));
+        var outDir = Path.Combine(OutputFolder, language);
 
         foreach (var (url, file) in Pages)
         {
-            var dstDir = Path.Combine(outDir.FullName, url);
+            var dstDir = Path.Combine(outDir, url);
             Directory.CreateDirectory(dstDir);
 
             var srcFile = Path.Combine(srcDir, file);
@@ -62,6 +64,15 @@ internal class BookTransformer
                     """);
             }
         }
+
+        var layoutHtml = await RazorTemplateEngine.RenderAsync("/DocumentPage.cshtml", new DocumentPageModel
+        {
+            RootUrlPrefix = $"/{BookUrlName}",
+            Language = language,
+            BookUrlName = BookUrlName,
+            BookDirName = BookDirName
+        });
+        File.WriteAllText(Path.Combine(outDir, "layout.html"), layoutHtml);
     }
 
     void Transform(string sourceFile, string destinationFile, string language)

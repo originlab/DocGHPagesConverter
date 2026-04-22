@@ -1,9 +1,8 @@
-﻿
-namespace OriginLab.DocumentGeneration;
+﻿namespace OriginLab.DocumentGeneration;
 
 class Program
 {
-    static void Main(string[] args)
+    async static Task Main(string[] args)
     {
         var outputPath = args[0];
 
@@ -27,7 +26,7 @@ class Program
 
         foreach (var lang in languages)
         {
-            transformer.Transform(lang);
+            transformer.TransformAsync(lang);
         }
 
         File.WriteAllText(Path.Combine(outputPath, "404.html"), """
