@@ -29,5 +29,15 @@ class Program
         {
             transformer.Transform(lang);
         }
+
+        File.WriteAllText(Path.Combine(outputPath, "404.html"), """
+            <script>
+            var currentURL = window.location.href;
+            var lowerCaseURL = currentURL.toLowerCase();
+            if (currentURL != lowerCaseURL) {
+                location.replace(lowerCaseURL);
+            }
+            </script>
+            """);
     }
 }
