@@ -177,6 +177,22 @@ internal class BookTransformer
                 ReportProblem(sourceFile, $"Unrecognized src: {src}");
             }
         }
+
+        var script = document.CreateElement<IHtmlScriptElement>();
+        script.InnerHtml = $$"""
+            window.addEventListener("DOMContentLoaded", async()=>{
+                var layout = await fetch("/{{BookUrlName}}/{{language}}/layout.html");
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(await layout.text(), 'text/html');
+                var container = doc.getElementById('doc-static-content-container');
+                container.innerHTML = document.body.innerHTML;
+                document.replaceChild(
+                    document.adoptNode(doc.documentElement),
+                    document.documentElement
+                );
+            })
+            """;
+        document.Prepend(script);
     }
 
     private void ReportProblem(string sourcePath, string message)
