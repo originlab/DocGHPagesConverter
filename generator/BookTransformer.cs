@@ -134,7 +134,7 @@ internal class BookTransformer
             {
                 if (src.StartsWith("../images/"))
                 {
-                    img.SetAttribute("src", $"{BookUrlName}/{language}/{src.AsSpan("../".Length)}");
+                    img.SetAttribute("src", $"/{BookUrlName}/{language}/{src.AsSpan("../".Length)}");
 
                     var srcImg = Path.GetFullPath(src, sourceDir);
 
