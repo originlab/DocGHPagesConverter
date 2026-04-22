@@ -12,7 +12,9 @@ internal class BookTransformer
     {
         var bookXml = XElement.Load(Path.Combine(srcBookPath, "en", "book.xml"));
         Pages = (from p in bookXml.Descendants("page")
-                 select (p.Attribute("url")!.Value, p.Attribute("file")!.Value)).ToArray();
+                 let url = p.Attribute("url")!.Value.ToLower()
+                 let file = p.Attribute("file")!.Value
+                 select (url, file)).ToArray();
 
         SourceBookPath = srcBookPath;
         OutputPath = outputPath;
@@ -21,21 +23,21 @@ internal class BookTransformer
     public void Transform(string language)
     {
         var srcDir = Path.Combine(SourceBookPath, language);
-        var dstDir = Directory.CreateDirectory(Path.Combine(OutputPath, language));
+        var outDir = Directory.CreateDirectory(Path.Combine(OutputPath, language));
 
         foreach (var page in Pages)
         {
-            var dir = dstDir.FullName;
+            var dstDir = outDir.FullName;
             var url = page.url;
             var sep = url.IndexOf('/');
             if (sep > 0)
             {
-                dir = Path.Combine(dir, url[(sep + 1)..].ToLower());
-                Directory.CreateDirectory(dir);
+                dstDir = Path.Combine(dstDir, url[(sep + 1)..]);
+                Directory.CreateDirectory(dstDir);
             }
 
             var srcFilePath = Path.Combine(srcDir, page.file);
-            var dstFilePath = Path.Combine(dir, "index.html");
+            var dstFilePath = Path.Combine(dstDir, "index.html");
 
             Transform(srcFilePath, dstFilePath);
         }
