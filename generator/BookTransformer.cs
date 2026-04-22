@@ -135,6 +135,14 @@ internal class BookTransformer
                 if (src.StartsWith("../images/"))
                 {
                     img.SetAttribute("src", $"{BookUrlName}/{language}/{src.AsSpan("../".Length)}");
+
+                    var srcImg = Path.GetFullPath(src, sourceDir);
+                    var dstImg = Path.Combine(OutputFolder, language, src["../".Length..]);
+
+                    var dstImgDir = Path.GetDirectoryName(dstImg)!;
+                    Directory.CreateDirectory(dstImgDir);
+
+                    File.Copy(srcImg, dstImg, overwrite: true);
                 }
                 else if (!Uri.IsWellFormedUriString(src, UriKind.Absolute))
                 {
