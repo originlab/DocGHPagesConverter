@@ -23,7 +23,7 @@ internal class BookTransformer
         var bookXml = XElement.Load(Path.Combine(sourcePath, "en", "book.xml"));
 
         BookUrlName = Path.GetFileName(sourcePath).ToLowerInvariant();
-        BookChmName = bookXml.Attribute("folder")!.Value;
+        BookChmName = bookXml.Attribute("dir")!.Value;
 
         Pages = (from p in bookXml.Descendants("page")
                  let url = p.Attribute("url")!.Value
