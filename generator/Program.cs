@@ -12,10 +12,10 @@ class Program
             Directory.CreateDirectory(outputPath);
         }
 
-        if (Path.GetDirectoryName(outputPath) is not string targetBookPath)
+        if (Path.GetDirectoryName(outputPath) is not string srcBookPath)
             return -2;
 
-        var languages = (from subPath in Directory.EnumerateDirectories(targetBookPath)
+        var languages = (from subPath in Directory.EnumerateDirectories(srcBookPath)
                          let name = Path.GetFileName(subPath)
                          where name.Length == 2
                          select name).ToList();
@@ -23,16 +23,16 @@ class Program
         if (!languages.Contains("en"))
             return -3;
 
-        var bookXmlPath = Path.Combine(targetBookPath, "en", "book.xml");
+        var bookXmlPath = Path.Combine(srcBookPath, "en", "book.xml");
 
         if (!File.Exists(bookXmlPath))
             return -4;
 
-        var transformer = new BookTransformer(bookXmlPath);
+        var transformer = new BookTransformer(srcBookPath, bookXmlPath, outputPath);
 
         foreach (var lang in languages)
         {
-            transformer.Transform(lang, targetBookPath, outputPath);
+            transformer.Transform(lang);
         }
 
         return 0;

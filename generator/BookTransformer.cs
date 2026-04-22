@@ -4,25 +4,29 @@ namespace OriginLab.DocumentGeneration;
 
 internal class BookTransformer
 {
-    readonly string BookXmlPath;
+    readonly string SourceBookPath;
+    readonly string OutputPath;
+    readonly (string url, string file)[] Pages;
 
-    public BookTransformer(string bookXmlPath)
+    public BookTransformer(string srcBookPath, string bookXmlPath, string outputPath)
     {
-        BookXmlPath = bookXmlPath;
+        var bookXml = XElement.Load(bookXmlPath);
+        Pages = (from p in bookXml.Descendants("page")
+                 select (p.Attribute("url")!.Value, p.Attribute("file")!.Value)).ToArray();
+
+        SourceBookPath = srcBookPath;
+        OutputPath = outputPath;
     }
 
-    public void Transform(string language, string targetBookPath, string outputPath)
+    public void Transform(string language)
     {
-        var bookXml = XElement.Load(BookXmlPath);
-        var pages = bookXml.Descendants("page").ToList();
+        var srcDir = Path.Combine(SourceBookPath, language);
+        var dstDir = Directory.CreateDirectory(Path.Combine(OutputPath, language));
 
-        var srcDir = Path.Combine(targetBookPath, language);
-        var dstDir = Directory.CreateDirectory(Path.Combine(outputPath, language));
-
-        foreach (var page in pages)
+        foreach (var page in Pages)
         {
             var dir = dstDir.FullName;
-            var url = page.Attribute("url")!.Value;
+            var url = page.url;
             var sep = url.IndexOf('/');
             if (sep > 0)
             {
@@ -30,7 +34,7 @@ internal class BookTransformer
                 Directory.CreateDirectory(dir);
             }
 
-            var srcFilePath = Path.Combine(srcDir, page.Attribute("file")!.Value);
+            var srcFilePath = Path.Combine(srcDir, page.file);
             var dstFilePath = Path.Combine(dir, "index.html");
 
             Transform(srcFilePath, dstFilePath);
