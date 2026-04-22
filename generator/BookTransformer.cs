@@ -30,7 +30,7 @@ internal class BookTransformer
             var sep = url.IndexOf('/');
             if (sep > 0)
             {
-                dir = Path.Combine(dir, url[(sep + 1)..]);
+                dir = Path.Combine(dir, url[(sep + 1)..].ToLower());
                 Directory.CreateDirectory(dir);
             }
 
