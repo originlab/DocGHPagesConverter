@@ -9,8 +9,8 @@ namespace OriginLab.DocumentGeneration;
 
 internal class BookTransformer
 {
-    readonly string SourcePath;
-    readonly string OutputPath;
+    readonly string SourceFolder;
+    readonly string OutputFolder;
 
     readonly string BookUrlName;
     readonly string BookDirName;
@@ -18,28 +18,28 @@ internal class BookTransformer
 
     readonly Dictionary<string, (string book, string url)> PageLinks;
 
-    public BookTransformer(string sourcePath, string outputPath)
+    public BookTransformer(string sourceFolder, string outputFolder)
     {
-        var bookXml = XElement.Load(Path.Combine(sourcePath, "en", "book.xml"));
+        BookUrlName = Path.GetFileName(sourceFolder).ToLowerInvariant();
+        BookDirName = Path.GetFileName(Directory.EnumerateDirectories(Path.Combine(sourceFolder, "en")).Single());
 
-        BookUrlName = Path.GetFileName(sourcePath).ToLowerInvariant();
-        BookDirName = bookXml.Attribute("dir")!.Value;
+        var bookXml = XElement.Load(Path.Combine(sourceFolder, "en", BookDirName, "book.xml"));
 
         Pages = (from p in bookXml.Descendants("page")
                  let url = p.Attribute("url")!.Value
                  let file = p.Attribute("file")!.Value
                  select ((url.Length == BookUrlName.Length ? "" : url[(BookUrlName.Length + 1)..]).ToLowerInvariant(), file)).ToArray();
 
-        PageLinks = Pages.ToDictionary(p => p.file, p => (BookUrlName, p.url), StringComparer.OrdinalIgnoreCase);
+        PageLinks = Pages.ToDictionary(p => $"{BookDirName}/{p.file}", p => (BookUrlName, p.url), StringComparer.OrdinalIgnoreCase);
 
-        SourcePath = sourcePath;
-        OutputPath = outputPath;
+        SourceFolder = sourceFolder;
+        OutputFolder = outputFolder;
     }
 
     public void Transform(string language)
     {
-        var srcDir = Path.Combine(SourcePath, language);
-        var outDir = Directory.CreateDirectory(Path.Combine(OutputPath, language));
+        var srcDir = Path.Combine(SourceFolder, language, BookDirName);
+        var outDir = Directory.CreateDirectory(Path.Combine(OutputFolder, language));
 
         foreach (var (url, file) in Pages)
         {
@@ -64,24 +64,26 @@ internal class BookTransformer
         }
     }
 
-    void Transform(string srcFile, string dstFile, string language)
+    void Transform(string sourceFile, string destinationFile, string language)
     {
-        using var fs = new FileStream(srcFile, FileMode.Open, FileAccess.Read);
+        using var fs = new FileStream(sourceFile, FileMode.Open, FileAccess.Read);
         var parser = new HtmlParser();
         var document = parser.ParseDocument(fs);
 
-        Transform(document, language, srcFile);
+        Transform(document, language, sourceFile);
 
-        using var sw = new StreamWriter(dstFile);
+        using var sw = new StreamWriter(destinationFile);
         document.ToHtml(sw, HtmlMarkupFormatter.Instance);
     }
 
-    void Transform(IHtmlDocument document, string language, string sourcePath)
+    void Transform(IHtmlDocument document, string language, string sourceFile)
     {
         if (document.QuerySelector("h1.firstHeading") is IElement firstHeading)
         {
             document.Title = firstHeading.Text();
         }
+
+        var sourceDir = Path.GetDirectoryName(sourceFile)!;
 
         foreach (var a in document.Descendants<IHtmlAnchorElement>())
         {
@@ -97,23 +99,22 @@ internal class BookTransformer
 
                 if (!String.IsNullOrWhiteSpace(href))
                 {
-                    if (Uri.IsWellFormedUriString(href, UriKind.Relative))
+                    if (Uri.IsWellFormedUriString(href, UriKind.Relative) && !href.StartsWith('/'))
                     {
-                        if (href.StartsWith($"../../{BookDirName}/"))
+                        var fullPath = Path.GetFullPath(href, sourceDir);
+                        if (fullPath.StartsWith(SourceFolder)
+                            && PageLinks.TryGetValue(fullPath[(SourceFolder.Length + "/en/".Length)..].Replace('\\', '/'), out var link))
                         {
-                            if (PageLinks.TryGetValue(href[$"../../{BookDirName}/".Length..], out var link))
-                            {
-                                a.SetAttribute("href", $"/{link.book}/{language}/{link.url}{hash}");
+                            a.SetAttribute("href", $"/{link.book}/{language}/{link.url}{hash}");
 
-                                //if (String.IsNullOrWhiteSpace(a.Title) || a.Title.Contains(':'))
-                                //{
-                                //    a.Title = link.title;
-                                //}
-                            }
-                            else
-                            {
-                                ReportProblem(sourcePath, $"Mapping unknown for href: {href}");
-                            }
+                            //if (String.IsNullOrWhiteSpace(a.Title) || a.Title.Contains(':'))
+                            //{
+                            //    a.Title = link.title;
+                            //}
+                        }
+                        else
+                        {
+                            ReportProblem(sourceFile, $"Mapping unknown for href: {href}");
                         }
                     }
                     else if (!href.StartsWith('#')
@@ -121,7 +122,7 @@ internal class BookTransformer
                         && !href.StartsWith("javascript:")
                         && !Uri.IsWellFormedUriString(href, UriKind.Absolute))
                     {
-                        ReportProblem(sourcePath, $"Unrecognized href: {href}");
+                        ReportProblem(sourceFile, $"Unrecognized href: {href}");
                     }
                 }
             }
