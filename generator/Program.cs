@@ -1,5 +1,4 @@
-﻿using System.Xml.Linq;
-
+﻿
 namespace OriginLab.DocumentGeneration;
 
 class Program
@@ -29,31 +28,11 @@ class Program
         if (!File.Exists(bookXmlPath))
             return -4;
 
-        var bookXml = XElement.Load(bookXmlPath);
-        var pages = bookXml.Descendants("page").ToList();
+        var transformer = new BookTransformer(bookXmlPath);
 
         foreach (var lang in languages)
         {
-            var srcDir = Path.Combine(targetBookPath, lang);
-            var dstDir = Directory.CreateDirectory(Path.Combine(outputPath, lang));
-            var transformer = new FileTransformer();
-
-            foreach (var page in pages)
-            {
-                var dir = dstDir.FullName;
-                var url = page.Attribute("url")!.Value;
-                var sep = url.IndexOf('/');
-                if (sep > 0)
-                {
-                    dir = Path.Combine(dir, url[(sep + 1)..]);
-                    Directory.CreateDirectory(dir);
-                }
-
-                var srcFilePath = Path.Combine(srcDir, page.Attribute("file")!.Value);
-                var dstFilePath = Path.Combine(dir, "index.html");
-
-                transformer.Transform(srcFilePath, dstFilePath);
-            }
+            transformer.Transform(lang, targetBookPath, outputPath);
         }
 
         return 0;
