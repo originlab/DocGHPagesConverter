@@ -130,37 +130,40 @@ internal class BookTransformer
 
         foreach (var img in document.Descendants<IHtmlImageElement>())
         {
-            if (img.GetAttribute("src") is string src)
+            if (img.GetAttribute("src") is not string src)
             {
-                if (src.StartsWith("../images/"))
+                continue;
+            }
+
+            if (src.StartsWith("../images/"))
+            {
+                img.SetAttribute("src", $"/{BookUrlName}/{language}/{src.AsSpan("../".Length)}");
+                img.SetAttribute("loading", "lazy");
+
+                var srcImg = Path.GetFullPath(src, sourceDir);
+
+                var sep = srcImg.AsSpan().IndexOfAny("?#");
+                if (sep > -1)
                 {
-                    img.SetAttribute("src", $"/{BookUrlName}/{language}/{src.AsSpan("../".Length)}");
-
-                    var srcImg = Path.GetFullPath(src, sourceDir);
-
-                    var sep = srcImg.AsSpan().IndexOfAny("?#");
-                    if (sep > -1)
-                    {
-                        srcImg = srcImg[..sep];
-                    }
-
-                    var dstImg = Path.Combine(OutputFolder, language, src["../".Length..]);
-
-                    sep = dstImg.AsSpan().IndexOfAny("?#");
-                    if (sep > -1)
-                    {
-                        dstImg = dstImg[..sep];
-                    }
-
-                    var dstImgDir = Path.GetDirectoryName(dstImg)!;
-                    Directory.CreateDirectory(dstImgDir);
-
-                    File.Copy(srcImg, dstImg, overwrite: true);
+                    srcImg = srcImg[..sep];
                 }
-                else if (!Uri.IsWellFormedUriString(src, UriKind.Absolute))
+
+                var dstImg = Path.Combine(OutputFolder, language, src["../".Length..]);
+
+                sep = dstImg.AsSpan().IndexOfAny("?#");
+                if (sep > -1)
                 {
-                    ReportProblem(sourceFile, $"Unrecognized src: {src}");
+                    dstImg = dstImg[..sep];
                 }
+
+                var dstImgDir = Path.GetDirectoryName(dstImg)!;
+                Directory.CreateDirectory(dstImgDir);
+
+                File.Copy(srcImg, dstImg, overwrite: true);
+            }
+            else if (!Uri.IsWellFormedUriString(src, UriKind.Absolute))
+            {
+                ReportProblem(sourceFile, $"Unrecognized src: {src}");
             }
         }
     }
