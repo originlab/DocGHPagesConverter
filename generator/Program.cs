@@ -26,7 +26,7 @@ class Program
 
         foreach (var lang in languages)
         {
-            transformer.TransformAsync(lang);
+            await transformer.TransformAsync(lang);
         }
 
         File.WriteAllText(Path.Combine(outputPath, "404.html"), """
