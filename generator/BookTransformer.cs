@@ -32,8 +32,8 @@ internal class BookTransformer
 
         PageLinks = Pages.ToDictionary(p => $"{BookDirName}/{p.file}", p => (BookUrlName, p.url), StringComparer.OrdinalIgnoreCase);
 
-        SourceFolder = sourceFolder;
-        OutputFolder = outputFolder;
+        SourceFolder = Path.GetFullPath(sourceFolder);
+        OutputFolder = Path.GetFullPath(outputFolder);
     }
 
     public void Transform(string language)
