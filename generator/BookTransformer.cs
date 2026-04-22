@@ -139,6 +139,12 @@ internal class BookTransformer
                     var srcImg = Path.GetFullPath(src, sourceDir);
                     var dstImg = Path.Combine(OutputFolder, language, src["../".Length..]);
 
+                    var sep = dstImg.AsSpan().IndexOfAny("?#");
+                    if (sep > -1)
+                    {
+                        dstImg = dstImg[..sep];
+                    }
+
                     var dstImgDir = Path.GetDirectoryName(dstImg)!;
                     Directory.CreateDirectory(dstImgDir);
 
