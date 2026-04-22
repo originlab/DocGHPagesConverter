@@ -127,6 +127,21 @@ internal class BookTransformer
                 }
             }
         }
+
+        foreach (var img in document.Descendants<IHtmlImageElement>())
+        {
+            if (img.GetAttribute("src") is string src)
+            {
+                if (src.StartsWith("../images/"))
+                {
+                    img.SetAttribute("src", $"{BookUrlName}/{language}/{src.AsSpan("../".Length)}");
+                }
+                else if (!Uri.IsWellFormedUriString(src, UriKind.Absolute))
+                {
+                    ReportProblem(sourceFile, $"Unrecognized src: {src}");
+                }
+            }
+        }
     }
 
     private void ReportProblem(string sourcePath, string message)
