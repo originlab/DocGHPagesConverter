@@ -143,7 +143,14 @@ internal class BookTransformer
                         if (fullPath.StartsWith(SourceFolder)
                             && PageLinks.TryGetValue(fullPath[(SourceFolder.Length + "/en/".Length)..].Replace('\\', '/'), out var link))
                         {
-                            a.SetAttribute("href", $"/{link.book}/{link.url}/{language}{hash}");
+                            if (language == "en")
+                            {
+                                a.SetAttribute("href", $"/{link.book}/{link.url}{hash}");
+                            }
+                            else
+                            {
+                                a.SetAttribute("href", $"/{link.book}/{link.url}/{language}{hash}");
+                            }
 
                             //if (String.IsNullOrWhiteSpace(a.Title) || a.Title.Contains(':'))
                             //{
