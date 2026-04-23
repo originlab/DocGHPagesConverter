@@ -38,6 +38,17 @@
         })()
     </script>
     <div class="i18n">
-        <a href="../en">English</a> | <a href="../de">Deutsch</a> | <a href="../ja">日本語</a>
+        @if (Model.Language != "en")
+        {
+            <a href="..">English</a>
+        }
+        @if (Model.Language != "de")
+        {
+            <text>@(Model.Language == "en" ? "" : " | ")<a href="@(Model.Language != "en" ? "../" : "")de">Deutsch</a></text>
+        }
+        @if (Model.Language != "ja")
+        {
+            <text> | <a href="@(Model.Language != "en" ? "../" : "")ja">日本語</a></text>
+        }
     </div>
 </div>

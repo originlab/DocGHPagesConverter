@@ -46,7 +46,7 @@ internal class BookTransformer
 
         foreach (var (url, file) in Pages)
         {
-            var dstDir = Path.Combine(OutputFolder, url, language);
+            var dstDir = Path.Combine(OutputFolder, url, language != "en" ? language : "");
             Directory.CreateDirectory(dstDir);
 
             var srcFile = Path.Combine(srcDir, file);
@@ -56,13 +56,17 @@ internal class BookTransformer
             {
                 Transform(srcFile, dstFile, language);
             }
-            else
+            else if (language != "en")
             {
                 File.WriteAllText(dstFile, $"""
                     <script>
-                    location.href.replace('/{BookUrlName}/{url}/en')
+                    location.href.replace('/{BookUrlName}/{url}')
                     </script>
                     """);
+            }
+            else
+            {
+                ReportProblem(srcFile, "Source file not found.");
             }
         }
 
