@@ -1,4 +1,4 @@
-﻿using System.Text;
+﻿using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using AngleSharp.Common;
 using AngleSharp.Dom;
@@ -25,6 +25,7 @@ internal class BookTransformer
 
     readonly Dictionary<string, (string book, string url)> PageLinks;
     readonly Dictionary<string, List<(string message, TextPosition? position)>> Problems = [];
+    readonly Dictionary<string, int> ProblemCounts = [];
 
     public BookTransformer(string booksXmlFolder, string sourceFolder, string outputFolder)
     {
@@ -269,6 +270,9 @@ internal class BookTransformer
         }
 
         detailsList.Add((message, position));
+
+        ref int count = ref CollectionsMarshal.GetValueRefOrAddDefault(ProblemCounts, message, out _);
+        count++;
     }
 
     public void PrintProblems()
@@ -291,6 +295,17 @@ internal class BookTransformer
             }
 
             Console.Error.WriteLine("::endgroup::");
+        }
+
+        if (ProblemCounts.Count > 0)
+        {
+            Console.Error.WriteLine();
+            Console.Error.WriteLine("Summary:");
+
+            foreach (var (message, count) in ProblemCounts.OrderByDescending(kvp => kvp.Value))
+            {
+                Console.Error.WriteLine($"{count}x {message}");
+            }
         }
     }
 }
