@@ -202,7 +202,7 @@ internal class BookTransformer
 
                     if (!File.Exists(srcImgEn))
                     {
-                        ReportProblem(sourceFile, $"Image not found: {srcImg}");
+                        ReportProblem(sourceFile, $"Image src not found: {src}");
                     }
 
                     img.SetAttribute("src", $"/{BookUrlName}/en/{src.AsSpan("../".Length)}");
