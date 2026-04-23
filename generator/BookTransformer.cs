@@ -24,7 +24,7 @@ internal class BookTransformer
     readonly (string url, string file)[] Pages;
 
     readonly Dictionary<string, (string book, string url)> PageLinks;
-    readonly List<(string file, string message, TextPosition? position)> Problems = [];
+    readonly Dictionary<string, List<(string message, TextPosition? position)>> Problems = [];
 
     public BookTransformer(string booksXmlFolder, string sourceFolder, string outputFolder)
     {
@@ -261,22 +261,36 @@ internal class BookTransformer
 
     private void ReportProblem(string sourcePath, string message, TextPosition? position = null)
     {
-        Problems.Add((Path.GetRelativePath(SourceFolder, sourcePath), message, position));
+        var file = Path.GetRelativePath(SourceFolder, sourcePath);
+
+        if (!Problems.TryGetValue(file, out var detailsList))
+        {
+            Problems[file] = detailsList = [];
+        }
+
+        detailsList.Add((message, position));
     }
 
     public void PrintProblems()
     {
-        foreach (var (file, message, position) in Problems)
+        foreach (var (file, detailsList) in Problems)
         {
-            Console.Error.Write($"::warning file={file}");
+            Console.Error.WriteLine($"::group::{file}");
 
-            if (position is not null)
+            foreach (var (message, position) in detailsList)
             {
-                Console.Error.Write($",line={position.Value.Line},col={position.Value.Column}");
+                Console.Error.Write($"::warning file={file}");
+
+                if (position is not null)
+                {
+                    Console.Error.Write($",line={position.Value.Line},col={position.Value.Column}");
+                }
+
+                Console.Error.Write("::");
+                Console.Error.WriteLine(message);
             }
 
-            Console.Error.Write("::");
-            Console.Error.WriteLine(message);
+            Console.Error.WriteLine("::endgroup::");
         }
     }
 }
