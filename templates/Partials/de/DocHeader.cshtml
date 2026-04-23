@@ -1,7 +1,7 @@
 @model DocumentPageModel
 
 <div class="col-sm-3">
-    <a class="btn btn-default" href="@Model.RootUrlPrefix/@Model.Language/" title="Return home"><span class="glyphicon glyphicon-home"></span></a>
+    <a class="btn btn-default" href="@Model.RootUrlPrefix/@(Model.Language == "en" ? "" : Model.Language)" title="Return home"><span class="glyphicon glyphicon-home"></span></a>
 </div>
 <div class="col-sm-9">
     <div class="form-inline pull-right hidden-xs">
