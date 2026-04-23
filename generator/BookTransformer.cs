@@ -23,7 +23,7 @@ internal class BookTransformer
 
     readonly Dictionary<string, (string book, string url)> PageLinks;
 
-    public BookTransformer(string sourceFolder, string outputFolder)
+    public BookTransformer(string booksXmlFolder, string sourceFolder, string outputFolder)
     {
         var languages = (from subPath in Directory.EnumerateDirectories(sourceFolder)
                          let name = Path.GetFileName(subPath)
@@ -45,7 +45,14 @@ internal class BookTransformer
                  let file = p.Attribute("file")!.Value
                  select ((url.Length == BookUrlName.Length ? "" : url[(BookUrlName.Length + 1)..]).ToLowerInvariant(), file)).ToArray();
 
-        PageLinks = Pages.ToDictionary(p => $"{BookDirName}/{p.file}", p => (BookUrlName, p.url), StringComparer.OrdinalIgnoreCase);
+        PageLinks = (from xmlFile in Directory.EnumerateFiles(booksXmlFolder, "*.xml")
+                     let dirName = Path.GetFileNameWithoutExtension(xmlFile)
+                     from p in XElement.Load(xmlFile).Descendants("page")
+                     let url = p.Attribute("url")!.Value
+                     let sep = url.IndexOf('/')
+                     let file = $"{dirName}/{p.Attribute("file")!.Value}"
+                     select (file, book: sep < 0 ? url : url[..sep], url: sep < 0 ? "" : url[(sep + 1)..]))
+                     .ToDictionary(p => p.file, p => (p.book.ToLowerInvariant(), p.url.ToLowerInvariant()), StringComparer.OrdinalIgnoreCase);
 
         SourceFolder = Path.GetFullPath(sourceFolder);
         SourceFolderEn = Path.Combine(SourceFolder, "en");
