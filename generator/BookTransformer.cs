@@ -96,7 +96,7 @@ internal class BookTransformer
             }
             else
             {
-                ReportProblem("book.xml", $"Source file not found: {srcFile}");
+                ReportProblem("en/book.xml", $"Source file not found: {srcFile}");
             }
         }
 
@@ -261,7 +261,7 @@ internal class BookTransformer
 
     private void ReportProblem(string sourcePath, string message, TextPosition? position = null)
     {
-        Problems.Add((sourcePath, message, position));
+        Problems.Add((Path.GetRelativePath(SourceFolder, sourcePath), message, position));
     }
 
     public void PrintProblems()
