@@ -1,9 +1,11 @@
-﻿using System.Xml.Linq;
+﻿using System.Text;
+using System.Xml.Linq;
 using AngleSharp.Common;
 using AngleSharp.Dom;
 using AngleSharp.Html;
 using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
+using AngleSharp.Text;
 using OriginLab.DocumentGeneration.Templates;
 using Razor.Templating.Core;
 
@@ -22,6 +24,7 @@ internal class BookTransformer
     readonly (string url, string file)[] Pages;
 
     readonly Dictionary<string, (string book, string url)> PageLinks;
+    readonly List<(string file, string message, TextPosition? position)> Problems = [];
 
     public BookTransformer(string booksXmlFolder, string sourceFolder, string outputFolder)
     {
@@ -93,7 +96,7 @@ internal class BookTransformer
             }
             else
             {
-                ReportProblem(srcFile, "Source file not found.");
+                ReportProblem("book.xml", $"Source file not found: {srcFile}");
             }
         }
 
@@ -112,7 +115,10 @@ internal class BookTransformer
     void Transform(string sourceFile, string destinationFile, string language)
     {
         using var fs = new FileStream(sourceFile, FileMode.Open, FileAccess.Read);
-        var parser = new HtmlParser();
+        var parser = new HtmlParser(new HtmlParserOptions
+        {
+            IsKeepingSourceReferences = true
+        });
         var document = parser.ParseDocument(fs);
 
         Transform(document, language, sourceFile);
@@ -166,7 +172,7 @@ internal class BookTransformer
                         }
                         else
                         {
-                            ReportProblem(sourceFile, $"Mapping unknown for href: {href}");
+                            ReportProblem(sourceFile, $"Mapping unknown for href: {href}", a.SourceReference?.Position);
                         }
                     }
                     else if (!href.StartsWith('#')
@@ -174,7 +180,7 @@ internal class BookTransformer
                         && !href.StartsWith("javascript:")
                         && !Uri.IsWellFormedUriString(href, UriKind.Absolute))
                     {
-                        ReportProblem(sourceFile, $"Unrecognized href: {href}");
+                        ReportProblem(sourceFile, $"Unrecognized href: {href}", a.SourceReference?.Position);
                     }
                 }
             }
@@ -209,7 +215,7 @@ internal class BookTransformer
 
                     if (!File.Exists(srcImgEn))
                     {
-                        ReportProblem(sourceFile, $"Image src not found: {src}");
+                        ReportProblem(sourceFile, $"Image src not found: {src}", img.SourceReference?.Position);
                     }
 
                     img.SetAttribute("src", $"/{BookUrlName}/en/{src.AsSpan("../".Length)}");
@@ -232,7 +238,7 @@ internal class BookTransformer
             }
             else if (!Uri.IsWellFormedUriString(src, UriKind.Absolute))
             {
-                ReportProblem(sourceFile, $"Unrecognized src: {src}");
+                ReportProblem(sourceFile, $"Unrecognized src: {src}", img.SourceReference?.Position);
             }
         }
 
@@ -253,10 +259,24 @@ internal class BookTransformer
         document.Head!.AppendElement(script);
     }
 
-    private void ReportProblem(string sourcePath, string message)
+    private void ReportProblem(string sourcePath, string message, TextPosition? position = null)
     {
-        Console.Error.WriteLine();
-        Console.Error.WriteLine(Path.GetRelativePath(SourceFolder, sourcePath));
-        Console.Error.WriteLine(message);
+        Problems.Add((sourcePath, message, position));
+    }
+
+    public void PrintProblems()
+    {
+        foreach (var (file, message, position) in Problems)
+        {
+            Console.Error.Write($"::warning file={file}");
+
+            if (position is not null)
+            {
+                Console.Error.Write($",line={position.Value.Line},col={position.Value.Column}");
+            }
+
+            Console.Error.Write("::");
+            Console.Error.WriteLine(message);
+        }
     }
 }

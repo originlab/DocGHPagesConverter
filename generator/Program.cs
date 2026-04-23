@@ -25,6 +25,8 @@ class Program
         var transformer = new BookTransformer(booksXmlPath, srcBookPath, outputPath);
         await transformer.TransformAsync();
 
+        transformer.PrintProblems();
+
         File.WriteAllText(Path.Combine(outputPath, "404.html"), """
             <script>
             var currentURL = window.location.href;
