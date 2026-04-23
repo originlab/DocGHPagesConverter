@@ -192,7 +192,7 @@ internal class BookTransformer
                 );
             })
             """;
-        document.Body!.AppendElement(script);
+        document.Head!.AppendElement(script);
     }
 
     private void ReportProblem(string sourcePath, string message)
