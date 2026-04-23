@@ -12,6 +12,7 @@ namespace OriginLab.DocumentGeneration;
 internal class BookTransformer
 {
     readonly string SourceFolder;
+    readonly string SourceFolderEn;
     readonly string OutputFolder;
 
     readonly string BookUrlName;
@@ -35,6 +36,7 @@ internal class BookTransformer
         PageLinks = Pages.ToDictionary(p => $"{BookDirName}/{p.file}", p => (BookUrlName, p.url), StringComparer.OrdinalIgnoreCase);
 
         SourceFolder = Path.GetFullPath(sourceFolder);
+        SourceFolderEn = Path.Combine(SourceFolder, "en");
         OutputFolder = Path.GetFullPath(outputFolder);
     }
 
@@ -148,7 +150,6 @@ internal class BookTransformer
 
             if (src.StartsWith("../images/"))
             {
-                img.SetAttribute("src", $"/{BookUrlName}/{language}/{src.AsSpan("../".Length)}");
                 img.SetAttribute("loading", "lazy");
 
                 var srcImg = Path.GetFullPath(src, sourceDir);
@@ -157,6 +158,24 @@ internal class BookTransformer
                 if (sep > -1)
                 {
                     srcImg = srcImg[..sep];
+                }
+
+                if (File.Exists(srcImg))
+                {
+                    img.SetAttribute("src", $"/{BookUrlName}/{language}/{src.AsSpan("../".Length)}");
+                }
+                else
+                {
+                    var srcImgEn = $"{SourceFolderEn}{srcImg.AsSpan(SourceFolderEn.Length)}";
+
+                    if (!File.Exists(srcImgEn))
+                    {
+                        ReportProblem(sourceFile, $"Image not found: {srcImg}");
+                    }
+
+                    img.SetAttribute("src", $"/{BookUrlName}/en/{src.AsSpan("../".Length)}");
+
+                    continue;
                 }
 
                 var dstImg = Path.Combine(OutputFolder, language, src["../".Length..]);
@@ -197,5 +216,8 @@ internal class BookTransformer
 
     private void ReportProblem(string sourcePath, string message)
     {
+        Console.Error.WriteLine();
+        Console.Error.WriteLine(Path.GetRelativePath(SourceFolder, sourcePath));
+        Console.Error.WriteLine(message);
     }
 }
