@@ -26,11 +26,5 @@ class Program
             }
             </script>
             """);
-
-        File.WriteAllText(Path.Combine(outputPath, "index.html"), """
-            <script>
-            location.replace('en');
-            </script>
-            """);
     }
 }
