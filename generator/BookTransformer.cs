@@ -43,11 +43,10 @@ internal class BookTransformer
     public async Task TransformAsync(string language)
     {
         var srcDir = Path.Combine(SourceFolder, language, BookDirName);
-        var outDir = Path.Combine(OutputFolder, language);
 
         foreach (var (url, file) in Pages)
         {
-            var dstDir = Path.Combine(outDir, url);
+            var dstDir = Path.Combine(OutputFolder, url, language);
             Directory.CreateDirectory(dstDir);
 
             var srcFile = Path.Combine(srcDir, file);
@@ -61,7 +60,7 @@ internal class BookTransformer
             {
                 File.WriteAllText(dstFile, $"""
                     <script>
-                    location.href.replace('/{BookUrlName}/en/{url}')
+                    location.href.replace('/{BookUrlName}/{url}/en')
                     </script>
                     """);
             }
@@ -74,7 +73,8 @@ internal class BookTransformer
             BookUrlName = BookUrlName,
             BookDirName = BookDirName
         });
-        File.WriteAllText(Path.Combine(outDir, "layout.html"), layoutHtml);
+        var langDir = Directory.CreateDirectory(Path.Combine(OutputFolder, language));
+        File.WriteAllText(Path.Combine(langDir.FullName, "layout.html"), layoutHtml);
     }
 
     void Transform(string sourceFile, string destinationFile, string language)
@@ -118,7 +118,7 @@ internal class BookTransformer
                         if (fullPath.StartsWith(SourceFolder)
                             && PageLinks.TryGetValue(fullPath[(SourceFolder.Length + "/en/".Length)..].Replace('\\', '/'), out var link))
                         {
-                            a.SetAttribute("href", $"/{link.book}/{language}/{link.url}{hash}");
+                            a.SetAttribute("href", $"/{link.book}/{link.url}/{language}{hash}");
 
                             //if (String.IsNullOrWhiteSpace(a.Title) || a.Title.Contains(':'))
                             //{
