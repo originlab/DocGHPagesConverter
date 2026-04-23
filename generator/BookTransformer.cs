@@ -15,6 +15,8 @@ internal class BookTransformer
     readonly string SourceFolderEn;
     readonly string OutputFolder;
 
+    readonly string[] AvailableLanguages;
+
     readonly string BookUrlName;
     readonly string BookDirName;
     readonly (string url, string file)[] Pages;
@@ -23,6 +25,16 @@ internal class BookTransformer
 
     public BookTransformer(string sourceFolder, string outputFolder)
     {
+        var languages = (from subPath in Directory.EnumerateDirectories(sourceFolder)
+                         let name = Path.GetFileName(subPath)
+                         where name.Length == 2
+                         select name).ToArray();
+
+        if (!languages.Contains("en"))
+            throw new FileNotFoundException("Expect en folder exists within source book", Path.Combine(sourceFolder, "en"));
+
+        AvailableLanguages = languages;
+
         BookUrlName = Path.GetFileName(sourceFolder).ToLowerInvariant();
         BookDirName = Path.GetFileName(Directory.EnumerateDirectories(Path.Combine(sourceFolder, "en")).Single());
 
@@ -40,7 +52,15 @@ internal class BookTransformer
         OutputFolder = Path.GetFullPath(outputFolder);
     }
 
-    public async Task TransformAsync(string language)
+    public async Task TransformAsync()
+    {
+        foreach (var language in AvailableLanguages)
+        {
+            await TransformAsync(language);
+        }
+    }
+
+    async Task TransformAsync(string language)
     {
         var srcDir = Path.Combine(SourceFolder, language, BookDirName);
 
@@ -74,6 +94,7 @@ internal class BookTransformer
         {
             RootUrlPrefix = $"/{BookUrlName}",
             Language = language,
+            AvailableLanguages = AvailableLanguages,
             BookUrlName = BookUrlName,
             BookDirName = BookDirName
         });

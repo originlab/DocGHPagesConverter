@@ -42,13 +42,17 @@
         {
             <a href="..">English</a>
         }
-        @if (Model.Language != "de")
+        @if (Model.Language != "de" && Model.AvailableLanguages.Contains("de"))
         {
             <text>@(Model.Language == "en" ? "" : " | ")<a href="@(Model.Language != "en" ? "../" : "")de">Deutsch</a></text>
         }
-        @if (Model.Language != "ja")
+        @if (Model.Language != "ja" && Model.AvailableLanguages.Contains("ja"))
         {
             <text> | <a href="@(Model.Language != "en" ? "../" : "")ja">日本語</a></text>
+        }
+        @if (Model.Language != "zh" && Model.AvailableLanguages.Contains("zh"))
+        {
+            <text> | <a href="@(Model.Language != "en" ? "../" : "")zh">简体中文</a></text>
         }
     </div>
 </div>

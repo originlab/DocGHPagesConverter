@@ -14,20 +14,8 @@ class Program
         if (Path.GetDirectoryName(outputPath) is not string srcBookPath)
             throw new ArgumentException("Expect output path within source book", nameof(args));
 
-        var languages = (from subPath in Directory.EnumerateDirectories(srcBookPath)
-                         let name = Path.GetFileName(subPath)
-                         where name.Length == 2
-                         select name).ToList();
-
-        if (!languages.Contains("en"))
-            throw new FileNotFoundException("Expect en folder exists within source book", Path.Combine(srcBookPath, "en"));
-
         var transformer = new BookTransformer(srcBookPath, outputPath);
-
-        foreach (var lang in languages)
-        {
-            await transformer.TransformAsync(lang);
-        }
+        await transformer.TransformAsync();
 
         File.WriteAllText(Path.Combine(outputPath, "404.html"), """
             <script>
