@@ -80,7 +80,7 @@ internal class BookTransformer
             {
                 File.WriteAllText(dstFile, $"""
                     <script>
-                    location.href.replace('/{BookUrlName}/{url}')
+                    location.replace('/{BookUrlName}/{url}')
                     </script>
                     """);
             }
