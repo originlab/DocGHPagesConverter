@@ -6,6 +6,8 @@ using AngleSharp.Html;
 using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
 using AngleSharp.Text;
+using OriginLab.DocumentGeneration.Templates;
+using Razor.Templating.Core;
 
 namespace OriginLab.DocumentGeneration;
 
@@ -198,6 +200,19 @@ internal abstract class ContentTransformer
             })
             """;
         document.Head!.AppendElement(script);
+    }
+
+    protected async Task GenerateLayoutAsync(string language, string rootUrlPrefix)
+    {
+        var layoutHtml = await RazorTemplateEngine.RenderAsync("/DocumentPage.cshtml", new DocumentPageModel
+        {
+            RootUrlPrefix = rootUrlPrefix,
+            Language = language,
+            AvailableLanguages = AvailableLanguages,
+            BookUrlName = BookUrlName,
+        });
+        var langDir = Directory.CreateDirectory(Path.Combine(OutputFolder, language));
+        File.WriteAllText(Path.Combine(langDir.FullName, "layout.html"), layoutHtml);
     }
 
     protected void ReportProblem(string sourcePath, string message, TextPosition? position = null)

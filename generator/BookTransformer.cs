@@ -1,6 +1,4 @@
 ﻿using System.Xml.Linq;
-using OriginLab.DocumentGeneration.Templates;
-using Razor.Templating.Core;
 
 namespace OriginLab.DocumentGeneration;
 
@@ -63,14 +61,6 @@ internal class BookTransformer : ContentTransformer
             }
         }
 
-        var layoutHtml = await RazorTemplateEngine.RenderAsync("/DocumentPage.cshtml", new DocumentPageModel
-        {
-            RootUrlPrefix = $"/{BookUrlName}",
-            Language = language,
-            AvailableLanguages = AvailableLanguages,
-            BookUrlName = BookUrlName,
-        });
-        var langDir = Directory.CreateDirectory(Path.Combine(OutputFolder, language));
-        File.WriteAllText(Path.Combine(langDir.FullName, "layout.html"), layoutHtml);
+        await GenerateLayoutAsync(language, $"/{BookUrlName}");
     }
 }
