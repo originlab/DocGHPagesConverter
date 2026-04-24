@@ -4,7 +4,7 @@ class Program
 {
     async static Task Main(string[] args)
     {
-        var srcBookPath = args[0];
+        var srcBookPath = Path.GetFullPath(args[0]);
         if (!Directory.Exists(srcBookPath))
         {
             throw new ArgumentException("Expect book folder exists!", nameof(args));
