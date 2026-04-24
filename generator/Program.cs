@@ -10,10 +10,12 @@ class Program
             throw new ArgumentException("Expect book folder exists!", nameof(args));
         }
 
-        var booksXmlPath = Path.Combine(Path.GetDirectoryName(srcBookPath)!, "index", "books");
+        var isBuildingIndex = Path.GetFileName(srcBookPath) == "index";
+
+        var booksXmlPath = isBuildingIndex ? Path.GetRelativePath(srcBookPath, "../books") : Path.GetRelativePath(srcBookPath, "../index/books");
         if (!Directory.Exists(booksXmlPath))
         {
-            throw new ArgumentException("Expect index/books exists!", nameof(args));
+            throw new ArgumentException("Expect the books folder exists!", nameof(args));
         }
 
         var outputPath = Path.Combine(srcBookPath, "out");
