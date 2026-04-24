@@ -2,7 +2,7 @@
 
 namespace OriginLab.DocumentGeneration;
 
-internal sealed class BookTransformer : ContentTransformer
+internal sealed class BookTransformer : Transformer
 {
     private readonly string BookDirName;
     private readonly (string url, string file)[] Pages;

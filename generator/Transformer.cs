@@ -11,7 +11,7 @@ using Razor.Templating.Core;
 
 namespace OriginLab.DocumentGeneration;
 
-internal abstract class ContentTransformer
+internal abstract class Transformer
 {
     protected readonly string SourceFolder;
     protected readonly string SourceFolderEn;
@@ -25,7 +25,7 @@ internal abstract class ContentTransformer
     readonly Dictionary<string, List<(string message, TextPosition? position)>> Problems = [];
     readonly Dictionary<string, int> ProblemCounts = [];
 
-    protected ContentTransformer(string booksXmlFolder, string sourceFolder, string outputFolder)
+    protected Transformer(string booksXmlFolder, string sourceFolder, string outputFolder)
     {
         var languages = (from subPath in Directory.EnumerateDirectories(sourceFolder)
                          let name = Path.GetFileName(subPath)
