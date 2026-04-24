@@ -5,7 +5,7 @@ namespace OriginLab.DocumentGeneration;
 internal class BookTransformer : ContentTransformer
 {
     private readonly string BookDirName;
-    private readonly (string, string file)[] Pages;
+    private readonly (string url, string file)[] Pages;
 
     public BookTransformer(string booksXmlFolder, string sourceFolder, string outputFolder)
         : base(booksXmlFolder, sourceFolder, outputFolder)
