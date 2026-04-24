@@ -2,7 +2,7 @@
 
 namespace OriginLab.DocumentGeneration;
 
-internal class BookTransformer : ContentTransformer
+internal sealed class BookTransformer : ContentTransformer
 {
     private readonly string BookDirName;
     private readonly (string url, string file)[] Pages;
@@ -10,7 +10,7 @@ internal class BookTransformer : ContentTransformer
     public BookTransformer(string booksXmlFolder, string sourceFolder, string outputFolder)
         : base(booksXmlFolder, sourceFolder, outputFolder)
     {
-        BookDirName = Path.GetFileName(SourceFolder).ToLowerInvariant();
+        BookDirName = Path.GetFileName(Directory.EnumerateDirectories(Path.Combine(SourceFolder, "en")).Single());
 
         var bookXml = XElement.Load(Path.Combine(sourceFolder, "en", BookDirName, "book.xml"));
 
@@ -21,7 +21,7 @@ internal class BookTransformer : ContentTransformer
 
     }
 
-    protected override string GetBookUrlName() => Path.GetFileName(Directory.EnumerateDirectories(Path.Combine(SourceFolder, "en")).Single());
+    protected override string GetBookUrlName() => Path.GetFileName(SourceFolder).ToLowerInvariant();
 
     public override async Task TransformAsync()
     {
