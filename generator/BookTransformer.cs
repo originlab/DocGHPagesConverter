@@ -28,6 +28,7 @@ internal class BookTransformer : ContentTransformer
         foreach (var language in AvailableLanguages)
         {
             await TransformAsync(language);
+            await GenerateLayoutAsync(language, $"/{BookUrlName}");
         }
     }
 
@@ -60,7 +61,5 @@ internal class BookTransformer : ContentTransformer
                 ReportProblem("en/book.xml", $"Source file not found: {srcFile}");
             }
         }
-
-        await GenerateLayoutAsync(language, $"/{BookUrlName}");
     }
 }
