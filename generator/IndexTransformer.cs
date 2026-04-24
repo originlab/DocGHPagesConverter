@@ -1,9 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace OriginLab.DocumentGeneration;
 
-namespace OriginLab.DocumentGeneration;
-
-internal class IndexTransformer
+internal class IndexTransformer : Transformer
 {
+    public IndexTransformer(string booksXmlFolder, string sourceFolder, string outputFolder)
+        : base(booksXmlFolder, sourceFolder, outputFolder)
+    {
+    }
+
+    protected override string GetBookUrlName() => "";
+
+    public override async Task TransformAsync()
+    {
+        foreach (var sourceFile in Directory.EnumerateFiles(SourceFolder, "index.html", SearchOption.AllDirectories))
+        {
+            var path = Path.GetRelativePath(SourceFolder, sourceFile);
+            var language = Path.GetFileName(Path.GetDirectoryName(path))!;
+
+            var destinationFile = language != "en" ? Path.Combine(OutputFolder, path)
+                                                   : Path.GetFullPath(Path.Combine(OutputFolder, Path.GetDirectoryName(path)!, "..", Path.GetFileName(path)))
+                                                   ;
+            var destinationDir = Path.GetDirectoryName(destinationFile)!;
+            Directory.CreateDirectory(destinationDir);
+
+            Transform(sourceFile, destinationFile, language);
+        }
+
+        foreach (var language in AvailableLanguages)
+        {
+            await GenerateLayoutAsync(language, "");
+        }
+    }
 }

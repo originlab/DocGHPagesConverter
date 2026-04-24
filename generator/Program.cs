@@ -12,7 +12,7 @@ class Program
 
         var isBuildingIndex = Path.GetFileName(srcBookPath) == "index";
 
-        var booksXmlPath = Path.GetFullPath(isBuildingIndex ? "../books" : "../index/books", srcBookPath);
+        var booksXmlPath = Path.GetFullPath(isBuildingIndex ? "books" : "../index/books", srcBookPath);
         if (!Directory.Exists(booksXmlPath))
         {
             throw new ArgumentException("Expect the books folder exists!", nameof(args));
@@ -24,7 +24,10 @@ class Program
             Directory.CreateDirectory(outputPath);
         }
 
-        var transformer = new BookTransformer(booksXmlPath, srcBookPath, outputPath);
+        Transformer transformer = isBuildingIndex
+            ? new IndexTransformer(booksXmlPath, Path.Combine(srcBookPath, "index"), outputPath)
+            : new BookTransformer(booksXmlPath, srcBookPath, outputPath)
+            ;
         await transformer.TransformAsync();
 
         transformer.PrintProblems();
