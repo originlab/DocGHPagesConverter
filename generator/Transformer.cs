@@ -185,21 +185,22 @@ internal abstract class Transformer
             }
         }
 
+        var head = document.Head!;
+
         var script = document.CreateElement<IHtmlScriptElement>();
-        script.InnerHtml = $$"""
-            window.addEventListener("DOMContentLoaded", async()=>{
-                var layout = await fetch("/{{BookUrlName}}/{{language}}/layout.html");
-                var parser = new DOMParser();
-                var doc = parser.parseFromString(await layout.text(), 'text/html');
-                var container = doc.getElementById('doc-static-content-container');
-                container.innerHTML = document.body.innerHTML;
-                document.replaceChild(
-                    document.adoptNode(doc.documentElement),
-                    document.documentElement
-                );
-            })
-            """;
-        document.Head!.AppendElement(script);
+        script.Source = "/static/gen_utils.js";
+        head.AppendElement(script);
+
+        script = document.CreateElement<IHtmlScriptElement>();
+        if (String.IsNullOrEmpty(BookUrlName))
+        {
+            script.InnerHtml = $"fetchApplyLayout('/{language}/layout.html', 'doc-static-content-container')";
+        }
+        else
+        {
+            script.InnerHtml = $"fetchApplyLayout('/{BookUrlName}/{language}/layout.html', 'doc-static-content-container')";
+        }
+        head.AppendElement(script);
     }
 
     protected async Task GenerateLayoutAsync(string language, string rootUrlPrefix)

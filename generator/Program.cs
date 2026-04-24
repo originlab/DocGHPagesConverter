@@ -33,13 +33,8 @@ class Program
         transformer.PrintProblems();
 
         File.WriteAllText(Path.Combine(outputPath, "404.html"), """
-            <script>
-            var currentURL = window.location.href;
-            var lowerCaseURL = currentURL.toLowerCase();
-            if (currentURL != lowerCaseURL) {
-                location.replace(lowerCaseURL);
-            }
-            </script>
+            <script src="/static/gen_utils.js"></script>
+            <script>tryRedirectToLower()</script>
             """);
     }
 }
