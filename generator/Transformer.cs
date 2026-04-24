@@ -97,7 +97,8 @@ internal abstract class Transformer
                     {
                         var fullPath = Path.GetFullPath(href, sourceDir);
                         if (fullPath.StartsWith(SourceFolder)
-                            && PageLinks.TryGetValue(fullPath[(SourceFolder.Length + "/en/".Length)..].Replace('\\', '/'), out var link))
+                            && Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(fullPath.AsSpan()))) is { IsEmpty: false } targetBookDirContainer
+                            && PageLinks.TryGetValue(fullPath[(targetBookDirContainer.Length + 1)..].Replace('\\', '/'), out var link))
                         {
                             if (language == "en")
                             {
