@@ -69,7 +69,6 @@ internal class BookTransformer : ContentTransformer
             Language = language,
             AvailableLanguages = AvailableLanguages,
             BookUrlName = BookUrlName,
-            BookDirName = BookDirName
         });
         var langDir = Directory.CreateDirectory(Path.Combine(OutputFolder, language));
         File.WriteAllText(Path.Combine(langDir.FullName, "layout.html"), layoutHtml);
